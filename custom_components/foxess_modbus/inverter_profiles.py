@@ -104,6 +104,10 @@ H1_G2_REGISTERS = SpecialRegisterConfig(
     individual_read_register_ranges=[(41000, 41999)],
 )
 
+MQ2200_REGISTERS = SpecialRegisterConfig(
+    invalid_register_ranges=[(41001, 41006), (41012, 41013), (41015, 41015)],
+    individual_read_register_ranges=[(37609, 37620), (37632, 37636)],
+)
 
 @dataclass(kw_only=True)
 class CapacityParser:
@@ -452,8 +456,8 @@ _INVERTER_PROFILES_LIST = [
     InverterModelProfile(InverterModel.MQ2200_M_A, r"^MQ(\d+)-M-A").add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
-        versions={None: Inv.H3_SMART},
-        special_registers=H3_SMART_REGISTERS,
+        versions={None: Inv.MQ2200},
+        special_registers=MQ2200_REGISTERS,
     ),
 ]
 
