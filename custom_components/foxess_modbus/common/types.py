@@ -95,7 +95,7 @@ class Inv(Flag):
 
     MQ2200_M_A = auto()
 
-    ALL = H1_LAN | H1_G1 | H1_G2_SET | KH_SET | H3_SET | H3_PRO_SET | H3_SMART
+    ALL = H1_LAN | H1_G1 | H1_G2_SET | KH_SET | H3_SET | H3_PRO_SET | H3_SMART | MQ2200_M_A
 
 
 class RegisterPollType(IntEnum):
