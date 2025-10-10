@@ -447,7 +447,8 @@ _INVERTER_PROFILES_LIST = [
         versions={None: Inv.H3_SMART},
         special_registers=H3_SMART_REGISTERS,
     ),
-    # MQ2200
+    # MQ2200-M-A
+    # test by wimb0
     InverterModelProfile(InverterModel.MQ2200_M_A, r"^MQ2200-M-A").add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
