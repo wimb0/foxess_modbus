@@ -448,7 +448,7 @@ _INVERTER_PROFILES_LIST = [
         special_registers=H3_SMART_REGISTERS,
     ),
     # MQ2200
-    InverterModelProfile(InverterModel.MQ2200-M-A, r"^MQ2200-M-A").add_connection_type(
+    InverterModelProfile(InverterModel.MQ2200_M_A, r"^MQ2200-M-A").add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
         versions={None: Inv.H3_SMART},
