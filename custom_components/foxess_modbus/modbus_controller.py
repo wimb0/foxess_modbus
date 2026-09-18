@@ -37,9 +37,8 @@ from .const import MAX_READ
 from .inverter_profiles import INVERTER_PROFILES
 from .inverter_profiles import InverterModelConnectionTypeProfile
 from .remote_control_manager import RemoteControlManager
-from .vendor.pymodbus import ConnectionException
-from .vendor.pymodbus import ExceptionResponse
-from .vendor.pymodbus import ModbusExceptions
+from modbus_connection import IllegalDataAddressError
+from modbus_connection import ModbusConnectionError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -255,7 +254,7 @@ class ModbusController(EntityController, UnloadController):
                 value = int(value)  # Ensure that we've been given an int
                 if not (_INT16_MIN <= value <= _UINT16_MAX):
                     raise ValueError(f"Value {value} must be between {_INT16_MIN} and {_UINT16_MAX}")
-                # pymodbus doesn't like negative values
+                # Modbus registers are unsigned words: wrap negatives to two's complement
                 if value < 0:
                     value = _UINT16_MAX + value + 1
                 values[i] = value
@@ -316,7 +315,7 @@ class ModbusController(EntityController, UnloadController):
                     changed_addresses,
                 )
                 self._notify_update(changed_addresses)
-            except ConnectionException as ex:
+            except ModbusConnectionError as ex:
                 exception = ex
                 _LOGGER.debug(
                     "Failed to connect to %s %s: %s",
@@ -485,10 +484,7 @@ class ModbusController(EntityController, UnloadController):
     # List of (start address, [read values starting at that address])
     async def _read_all_registers(self) -> list[tuple[int, Iterable[int | None]]]:
         def _is_illegal_address(ex: ModbusClientFailedError) -> bool:
-            return (
-                isinstance(ex.response, ExceptionResponse)
-                and ex.response.exception_code == ModbusExceptions.IllegalAddress
-            )
+            return isinstance(ex.response, IllegalDataAddressError)
 
         read_values: list[tuple[int, Iterable[int | None]]] = []
 
@@ -596,13 +592,7 @@ class ModbusController(EntityController, UnloadController):
 
         :returns: Tuple of (inverter type name e.g. "H1", inverter full name e.g. "H1-3.7-E")
         """
-        # Annoyingly pymodbus logs the important stuff to its logger, and doesn't add that info to the exceptions it
-        # throws
-        spy_handler = _SpyHandler()
-        pymodbus_logger = logging.getLogger("pymodbus")
-
         try:
-            pymodbus_logger.addHandler(spy_handler)
 
             # All known inverter types expose the model number at holding register 30000 onwards.
             # (The H1 series additionally expose some model info in input registers))
@@ -655,16 +645,6 @@ class ModbusController(EntityController, UnloadController):
             raise UnsupportedInverterError(full_model)
         except Exception as ex:
             _LOGGER.exception("Autodetect: failed to connect to (%s)", client)
-            raise AutoconnectFailedError(spy_handler.records) from ex
+            raise AutoconnectFailedError([]) from ex
         finally:
-            pymodbus_logger.removeHandler(spy_handler)
             await client.close()
-
-
-class _SpyHandler(logging.Handler):
-    def __init__(self) -> None:
-        super().__init__(level=logging.ERROR)
-        self.records: list[logging.LogRecord] = []
-
-    def emit(self, record: logging.LogRecord) -> None:
-        self.records.append(record)

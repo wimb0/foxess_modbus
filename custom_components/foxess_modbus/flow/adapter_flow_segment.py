@@ -21,8 +21,8 @@ from ..inverter_adapters import ADAPTERS
 from ..inverter_adapters import InverterAdapter
 from ..inverter_adapters import InverterAdapterType
 from ..modbus_controller import ModbusController
-from ..vendor.pymodbus import ConnectionException
-from ..vendor.pymodbus import ModbusIOException
+from modbus_connection import ModbusConnectionError
+from modbus_connection import ModbusTimeoutError
 from .flow_handler_mixin import FlowHandlerMixin
 from .flow_handler_mixin import ValidationFailedError
 from .inverter_data import InverterData
@@ -308,7 +308,7 @@ class AdapterFlowSegment:
                     result = str(ex.__cause__)
                 return result
 
-            if isinstance(ex.__cause__, ConnectionException):
+            if isinstance(ex.__cause__, ModbusConnectionError):
                 # Mainly TCP timeouts. The actual exception message dosen't contain anything interesting here
                 raise ValidationFailedError(
                     {
@@ -321,7 +321,7 @@ class AdapterFlowSegment:
                     error_placeholders={"error_details": get_details(ex, False)},
                 ) from ex
 
-            if isinstance(ex.__cause__, ModbusIOException):
+            if isinstance(ex.__cause__, ModbusTimeoutError):
                 # This is for things like invalid frames. The exception message here can be useful
                 raise ValidationFailedError(
                     {

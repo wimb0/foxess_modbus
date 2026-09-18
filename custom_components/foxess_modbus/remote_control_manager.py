@@ -28,7 +28,6 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         self._discharge_power: int | None = None
         self._charge_power: int | None = None
         self._max_soc_override: int | None = None
-        self._is_updating = False
 
         modbus_addresses = [
             *self._addresses.battery_soc,
@@ -322,23 +321,11 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         return self._modbus_addresses
 
     async def poll_complete_callback(self) -> None:
-        if self._is_updating:
-            return
-        self._is_updating = True
-        try:
-            await self._update()
-        finally:
-            self._is_updating = False
+        await self._update()
 
     async def became_connected_callback(self) -> None:
         self._remote_control_enabled = False
-        if self._is_updating:
-            return
-        self._is_updating = True
-        try:
-            await self._update()
-        finally:
-            self._is_updating = False
+        await self._update()
 
     def update_callback(self, changed_addresses: set[int]) -> None:
         pass

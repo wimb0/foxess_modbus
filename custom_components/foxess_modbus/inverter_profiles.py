@@ -296,13 +296,6 @@ _INVERTER_PROFILES_LIST = [
         versions={Version(1, 44): Inv.H1_G2_PRE144, None: Inv.H1_G2_144},
         special_registers=H1_G2_REGISTERS,
     ),
-    # P1 is an OEM variant of the H1-G2, see https://github.com/nathanmarlor/foxess_modbus/discussions/914
-    InverterModelProfile(InverterModel.P1, r"^P1-([\d\.]+)-E", capacity_parser=CapacityParser.H1).add_connection_type(
-        ConnectionType.AUX,
-        RegisterType.HOLDING,
-        versions={Version(1, 44): Inv.H1_G2_PRE144, None: Inv.H1_G2_144},
-        special_registers=H1_G2_REGISTERS,
-    ),
     InverterModelProfile(InverterModel.AC1, r"^AC1-([\d\.]+)", capacity_parser=CapacityParser.H1)
     .add_connection_type(
         ConnectionType.AUX,
@@ -345,11 +338,8 @@ _INVERTER_PROFILES_LIST = [
         versions={Version(1, 33): Inv.KH_PRE133, None: Inv.KH_133},
         special_registers=KH_REGISTERS,
     ),
-    # H3-Smart has to appear before H3.
-    # The "-M" suffix (e.g. H3-10.0-M) is an OEM/installer variant of the H3-Smart (Gen2), confirmed
-    # by FoxESS - see https://github.com/nathanmarlor/foxess_modbus/issues/1023. Without this it falls
-    # through to the plain H3 profile and reads the wrong (legacy) register map.
-    InverterModelProfile(InverterModel.H3_SMART, r"^H3-([\d\.]+)-(?:Smart|M)").add_connection_type(
+    # H3-Smart has to appear before H3
+    InverterModelProfile(InverterModel.H3_SMART, r"^H3-([\d\.]+)-Smart").add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
         versions={None: Inv.H3_SMART},
@@ -481,6 +471,20 @@ _INVERTER_PROFILES_LIST = [
         ConnectionType.AUX,
         RegisterType.HOLDING,
         versions={None: Inv.EVO},
+    ),
+    # FoxESS MQ2200-M-A balcony battery (no PV). Proven by nextenergy_battery:
+    # model at 30000, BMS 37609-37633, meter 38801-38815, inverter 39063-39141,
+    # powerflow 39168/39225/39237/39423, energy 39605-39632, settings 46609-46611/49203.
+    # Capacity 800W max output (1200W max input). Stack supports up to 5 BMS slave modules.
+    InverterModelProfile(
+        InverterModel.MQ2200,
+        r"^MQ2200-M-(A)",
+        capacity_parser=CapacityParser(capacity_map={"A": 800}, fallback_to_kw=False),
+    ).add_connection_type(
+        ConnectionType.AUX,
+        RegisterType.HOLDING,
+        versions={None: Inv.MQ2200},
+        special_registers=H3_SMART_REGISTERS,
     ),
 ]
 

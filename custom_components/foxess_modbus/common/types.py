@@ -38,8 +38,6 @@ class InverterModel(StrEnum):
     H1_G1 = "H1"  # Can't change the value, as it's set in people's configs
     H1_G2 = "H1_G2"
 
-    P1 = "P1"
-
     AC1 = "AC1"
     AC1_G2 = "AC1_G2"
     AIO_H1 = "AIO-H1"
@@ -64,6 +62,8 @@ class InverterModel(StrEnum):
 
     P3_SMART = "P3_SMART"
     EVO = "EVO"
+
+    MQ2200 = "MQ2200"
 
 
 class Inv(Flag):
@@ -99,7 +99,9 @@ class Inv(Flag):
 
     EVO = auto()
 
-    ALL = H1_LAN | H1_G1 | H1_G2_SET | KH_SET | H3_SET | H3_PRO_SET | H3_SMART | EVO
+    MQ2200 = auto()
+
+    ALL = H1_LAN | H1_G1 | H1_G2_SET | KH_SET | H3_SET | H3_PRO_SET | H3_SMART | EVO | MQ2200
 
 
 class RegisterPollType(IntEnum):
